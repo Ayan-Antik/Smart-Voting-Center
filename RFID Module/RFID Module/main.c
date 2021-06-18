@@ -42,7 +42,7 @@ void UART_init()
 
 	//UBRRL = BAUD_PRESCALE;		// Load lower 8-bits of the baud rate
 	//UBRRH = (BAUD_PRESCALE >> 8);	// Load upper 8-bits
-	UBRRL = 0x33;
+	UBRRL = 0x19;
 	UBRRH = 0x00;
 }
 
@@ -51,7 +51,11 @@ unsigned char UART_RxChar()
 	while ((UCSRA & (1 << RXC)) == 0x00);// Wait till data is received
 	return UDR;		// Return the byte
 }
-
+/*
+unsigned char UART_TxChar(){
+	
+	
+}*/
 int main(void)
 {	
    DDRD = 0b11111110;
@@ -68,6 +72,7 @@ int main(void)
    Lcd4_Clear();
    
    Lcd4_Set_Cursor(1, 0);
+   
    int match = 0;
     while (1) 
     {	
@@ -100,6 +105,26 @@ int main(void)
 		 else if(match == 1){
 			  Lcd4_Clear();
 			  Lcd4_Write_String("ID match found!");
+			  _delay_ms(2500);
+			  Lcd4_Clear();
+			  
+			  int lock = rand() % (9999 + 1 - 1000) + 1000;
+			  unsigned char locks[4];
+			  //int div = 99;
+			  int mod = 0;
+			  while(lock != 0){
+				  locks[mod] = (lock % 10) + '0';
+				  lock = lock / 10;
+				  mod++;
+				  
+			  }
+			  Lcd4_Write_String("Your Lock Code: ");
+			  Lcd4_Set_Cursor(2, 0);
+			  for(int i = 3; i!=-1; i--){
+				  Lcd4_Write_Char(locks[i]);
+			  }
+			  //Lcd4_Write_Char(lock);
+			 
 		 }
 	}
 }
