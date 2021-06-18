@@ -4,7 +4,7 @@
  * Created: 6/18/2021 7:44:12 PM
  * Author : USER
  */ 
-#define F_CPU 16000000UL
+#define F_CPU 1000000
 #define D4 eS_PORTA4
 #define D5 eS_PORTA5
 #define D6 eS_PORTA6
@@ -18,8 +18,21 @@
 #include <stdio.h>
 #include "lcd.h"
 
+int total_id = 5;
+int id_len = 10;
+unsigned char valid_id[5][10] = {
+	"1501020304",
+	"1501020305",
+	"1501020306",
+	"1501020307",
+	"1501020308",
+};
+
+
+
 void UART_init()
-{
+{	
+	
 	UCSRB = 0b00010000;// Turn on the reception
 	UCSRC = 0b10000110;
 	//UCSRC |= (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);// Use 8-bit character sizes
@@ -45,16 +58,49 @@ int main(void)
    DDRA = 0xFF;
    Lcd4_Init();
    UART_init();
-   unsigned char c;
+   unsigned char id[10];
+   int count = 1;
    Lcd4_Write_String("Waiting for  ");
+   _delay_ms(500);
    Lcd4_Set_Cursor(2, 1);
    Lcd4_Write_String("RFID Tag");
+   _delay_ms(500);
    Lcd4_Clear();
+   
    Lcd4_Set_Cursor(1, 0);
+   int match = 0;
     while (1) 
-    {
-		c = UART_RxChar();
-		Lcd4_Write_Char(c);
-    }
+    {	
+		id[count-1] = UART_RxChar();
+		Lcd4_Write_Char(id[count-1]);
+		if(count < id_len){
+			count++;
+			continue;
+		 }
+		 else if(count == id_len){
+			 int j;
+			 for(int i = 0; i<total_id; i++){
+				 for(j = 0; j<id_len; j++){
+					 if(valid_id[i][j] != id[j]){
+						break;
+					 }	 
+				 }
+				 if(j == id_len){
+					match = 1;
+					break;
+				 }
+			 }
+		 }
+		 if(match == 0){
+			 Lcd4_Clear();
+			 Lcd4_Write_String("ID match: ");
+			 Lcd4_Set_Cursor(2,0);
+			 Lcd4_Write_String("Not found. Reset");
+		 }
+		 else if(match == 1){
+			  Lcd4_Clear();
+			  Lcd4_Write_String("ID match found!");
+		 }
+	}
 }
 
