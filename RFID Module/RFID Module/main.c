@@ -33,11 +33,11 @@ unsigned char valid_id[5][10] = {
 void UART_init()
 {	
 	
-	UCSRB = 0b00010000;// Turn on the reception
+	UCSRB = 0b00011000;// Turn on the reception and Transmission
 	UCSRC = 0b10000110;
 	//UCSRC |= (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);// Use 8-bit character sizes
 	UCSRA = 0b00000000;
-	UCSRA |= (1 << RXC);
+	UCSRA |= (1 << RXC) | (1<<TXC);
 	// | (0<<TXC)|(0<<UDRE)|(0<<FE)|(0<<DOR)|(0<UPE)|(0<<U2X)|(0<<MPCM)
 
 	//UBRRL = BAUD_PRESCALE;		// Load lower 8-bits of the baud rate
@@ -51,19 +51,22 @@ unsigned char UART_RxChar()
 	while ((UCSRA & (1 << RXC)) == 0x00);// Wait till data is received
 	return UDR;		// Return the byte
 }
-/*
-unsigned char UART_TxChar(){
+
+void UART_TxChar(unsigned char data){
+	while((UCSRA & (1 << UDRE)) == 0x00);
+	UDR = data;
 	
-	
-}*/
+}
 int main(void)
 {	
    DDRD = 0b11111110;
    DDRA = 0xFF;
+   
    Lcd4_Init();
    UART_init();
    unsigned char id[10];
    int count = 1;
+   Lcd4_Clear();
    Lcd4_Write_String("Waiting for  ");
    _delay_ms(500);
    Lcd4_Set_Cursor(2, 1);
@@ -122,7 +125,10 @@ int main(void)
 			  Lcd4_Set_Cursor(2, 0);
 			  for(int i = 3; i!=-1; i--){
 				  Lcd4_Write_Char(locks[i]);
+				  UART_TxChar(locks[i]);
 			  }
+			  
+			  //Lcd4_Clear();
 			  //Lcd4_Write_Char(lock);
 			 
 		 }
