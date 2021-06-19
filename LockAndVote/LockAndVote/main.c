@@ -41,14 +41,47 @@ unsigned char UART_RxChar()
 	return UDR;		// Return the byte
 }
 
+char get_key(){
+	
+	PORTB |= 1;
+	if(PINB & (1 << PINB3)){PORTB &= ~(1);return '1';}
+	else if(PINB & (1 << PINB4)){PORTB &= ~(1);return '4';}
+	else if(PINB & (1 << PINB5)){PORTB &= ~(1);return '7';}
+	else if(PINB & (1 << PINB6)){PORTB &= ~(1);return '*';}
+	PORTB &= ~(1);
+	
+	PORTB |= 2;
+	if(PINB & (1 << PINB3)){PORTB &= ~(2); return '2';}
+	else if(PINB & (1 << PINB4)){PORTB &= ~(2); return '5';}
+	else if(PINB & (1 << PINB5)){PORTB &= ~(2); return '8';}
+	else if(PINB & (1 << PINB6)){PORTB &= ~(2); return '0';}
+	PORTB &= ~(2);
+	
+	PORTB |= 4;
+	if(PINB & (1 << PINB3)){PORTB &= ~(4); return '3';}
+	else if(PINB & (1 << PINB4)){PORTB &= ~(4); return '6';}
+	else if(PINB & (1 << PINB5)){PORTB &= ~(4); return '9';}
+	else if(PINB & (1 << PINB6)){PORTB &= ~(4); return '#';}
+	
+	PORTB &= ~(4);
+	
+	return 0;
+}
+
+
+
 int main(void)
 {	
 	DDRD = 0b11111110;
+	DDRB = 0b00000111;
 	DDRC = 0xFF;
 	Lcd4_Init();
 	UART_init();
 	unsigned char lock[4];
+	
+	unsigned char lock_in[4];
 	int count = 0;
+	int input_pass = 0;
 	Lcd4_Write_String("Lock: ");
 	Lcd4_Set_Cursor(2,0);
     /* Replace with your application code */
@@ -57,9 +90,26 @@ int main(void)
 		while(count < 4){
 			lock[count] = UART_RxChar();
 			Lcd4_Write_Char(lock[count]);
+			_delay_ms(200);
 			count++;	
 		}
+		_delay_ms(500);
+		Lcd4_Clear();
+		Lcd4_Write_String("Your Lock Input:");
+		Lcd4_Set_Cursor(2, 0);
+		_delay_ms(500);
 		
+		while(input_pass < 4){
+			if(get_key() != 0){
+				lock_in[input_pass] = get_key();
+				Lcd4_Write_Char(lock_in[input_pass]);
+				_delay_ms(500);
+				input_pass++;
+			}
+		}
+		
+		Lcd4_Clear();
+		break;
 		
     }
 }
