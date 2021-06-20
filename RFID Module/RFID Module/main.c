@@ -64,74 +64,86 @@ int main(void)
    
    Lcd4_Init();
    UART_init();
-   unsigned char id[10];
-   int count = 1;
-   Lcd4_Clear();
-   Lcd4_Write_String("Waiting for  ");
-   _delay_ms(500);
-   Lcd4_Set_Cursor(2, 1);
-   Lcd4_Write_String("RFID Tag");
-   _delay_ms(500);
-   Lcd4_Clear();
-   
-   Lcd4_Set_Cursor(1, 0);
-   
-   int match = 0;
+  
     while (1) 
     {	
-		id[count-1] = UART_RxChar();
-		Lcd4_Write_Char(id[count-1]);
-		if(count < id_len){
-			count++;
-			continue;
-		 }
-		 else if(count == id_len){
-			 int j;
-			 for(int i = 0; i<total_id; i++){
-				 for(j = 0; j<id_len; j++){
-					 if(valid_id[i][j] != id[j]){
+		unsigned char id[10];
+	    int count = 1;
+	    Lcd4_Clear();
+	    Lcd4_Write_String("Waiting for  ");
+	    _delay_ms(500);
+	    Lcd4_Set_Cursor(2, 1);
+	    Lcd4_Write_String("RFID Tag");
+	    _delay_ms(500);
+	    Lcd4_Clear();
+	    
+	    Lcd4_Set_Cursor(1, 0);
+	    
+	    int match = 0;
+		
+		while(1){
+			id[count-1] = UART_RxChar();
+			Lcd4_Write_Char(id[count-1]);
+			if(count < id_len){
+				count++;
+				continue;
+			}
+			else if(count == id_len){
+				int j;
+				for(int i = 0; i<total_id; i++){
+					for(j = 0; j<id_len; j++){
+						if(valid_id[i][j] != id[j]){
+							break;
+						}
+					}
+					if(j == id_len){
+						match = 1;
 						break;
-					 }	 
-				 }
-				 if(j == id_len){
-					match = 1;
-					break;
-				 }
-			 }
-		 }
-		 if(match == 0){
-			 Lcd4_Clear();
-			 Lcd4_Write_String("ID match: ");
-			 Lcd4_Set_Cursor(2,0);
-			 Lcd4_Write_String("Not found. Reset");
-		 }
-		 else if(match == 1){
-			  Lcd4_Clear();
-			  Lcd4_Write_String("ID match found!");
-			  _delay_ms(2500);
-			  Lcd4_Clear();
-			  
-			  int lock = rand() % (9999 + 1 - 1000) + 1000;
-			  unsigned char locks[4];
-			  //int div = 99;
-			  int mod = 0;
-			  while(lock != 0){
-				  locks[mod] = (lock % 10) + '0';
-				  lock = lock / 10;
-				  mod++;
-				  
-			  }
-			  Lcd4_Write_String("Your Lock Code: ");
-			  Lcd4_Set_Cursor(2, 0);
-			  for(int i = 3; i!=-1; i--){
-				  Lcd4_Write_Char(locks[i]);
-				  UART_TxChar(locks[i]);
-			  }
-			  
-			  //Lcd4_Clear();
-			  //Lcd4_Write_Char(lock);
-			 
-		 }
+					}
+				}
+			}
+			if(match == 0){
+				Lcd4_Clear();
+				Lcd4_Write_String("ID match: ");
+				Lcd4_Set_Cursor(2,0);
+				Lcd4_Write_String("Not found. Reset");
+				break;
+			}
+			else if(match == 1){
+				Lcd4_Clear();
+				Lcd4_Write_String("ID match found!");
+				_delay_ms(2500);
+				Lcd4_Clear();
+				
+				int lock = rand() % (9999 + 1 - 1000) + 1000;
+				unsigned char locks[4];
+				//int div = 99;
+				int mod = 0;
+				while(lock != 0){
+					locks[mod] = (lock % 10) + '0';
+					lock = lock / 10;
+					mod++;
+					
+				}
+				Lcd4_Write_String("Your Lock Code: ");
+				Lcd4_Set_Cursor(2, 0);
+				for(int i = 3; i!=-1; i--){
+					Lcd4_Write_Char(locks[i]);
+					_delay_ms(100);
+					UART_TxChar(locks[i]);
+				}
+				
+				_delay_ms(5000);
+				Lcd4_Clear();
+				_delay_ms(3000);
+				break;
+				//Lcd4_Write_Char(lock);
+				
+				
+				
+			}
+		}
+		
 	}
 }
 

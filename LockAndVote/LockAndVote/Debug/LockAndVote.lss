@@ -3,29 +3,29 @@ LockAndVote.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00000966  00000000  00000000  00000074  2**1
+  0 .text         0000094e  00000000  00000000  00000074  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         0000007a  00800060  00000966  000009da  2**0
+  1 .data         0000007a  00800060  0000094e  000009c2  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .comment      00000030  00000000  00000000  00000a54  2**0
+  2 .comment      00000030  00000000  00000000  00000a3c  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000a84  2**2
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000a6c  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 000000d0  00000000  00000000  00000ac0  2**0
+  4 .debug_aranges 000000d8  00000000  00000000  00000aa8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   00001a26  00000000  00000000  00000b90  2**0
+  5 .debug_info   00001a53  00000000  00000000  00000b80  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 0000070e  00000000  00000000  000025b6  2**0
+  6 .debug_abbrev 00000717  00000000  00000000  000025d3  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   00000cf8  00000000  00000000  00002cc4  2**0
+  7 .debug_line   00000d12  00000000  00000000  00002cea  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000204  00000000  00000000  000039bc  2**2
+  8 .debug_frame  00000208  00000000  00000000  000039fc  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    00000490  00000000  00000000  00003bc0  2**0
+  9 .debug_str    000004a1  00000000  00000000  00003c04  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    000015d0  00000000  00000000  00004050  2**0
+ 10 .debug_loc    000015ce  00000000  00000000  000040a5  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 000000d8  00000000  00000000  00005620  2**0
+ 11 .debug_ranges 000000c8  00000000  00000000  00005673  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -65,7 +65,7 @@ Disassembly of section .text:
   60:	10 e0       	ldi	r17, 0x00	; 0
   62:	a0 e6       	ldi	r26, 0x60	; 96
   64:	b0 e0       	ldi	r27, 0x00	; 0
-  66:	e6 e6       	ldi	r30, 0x66	; 102
+  66:	ee e4       	ldi	r30, 0x4E	; 78
   68:	f9 e0       	ldi	r31, 0x09	; 9
   6a:	02 c0       	rjmp	.+4      	; 0x70 <__do_copy_data+0x10>
   6c:	05 90       	lpm	r0, Z+
@@ -74,18 +74,18 @@ Disassembly of section .text:
   72:	b1 07       	cpc	r27, r17
   74:	d9 f7       	brne	.-10     	; 0x6c <__do_copy_data+0xc>
   76:	0e 94 9b 03 	call	0x736	; 0x736 <main>
-  7a:	0c 94 b1 04 	jmp	0x962	; 0x962 <_exit>
+  7a:	0c 94 a5 04 	jmp	0x94a	; 0x94a <_exit>
 
 0000007e <__bad_interrupt>:
   7e:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
 
 00000082 <pinChange>:
+	while ((UCSRA & (1 << RXC)) == 0x00);// Wait till data is received
+	return UDR;		// Return the byte
 }
-
-void Lcd4_Shift_Right()
-{
-	Lcd4_Cmd(0x01);
-	Lcd4_Cmd(0x0C);
+void UART_TxChar(unsigned char data){
+	while((UCSRA & (1 << UDRE)) == 0x00);
+	UDR = data;
   82:	67 2b       	or	r22, r23
   84:	09 f0       	breq	.+2      	; 0x88 <pinChange+0x6>
   86:	df c0       	rjmp	.+446    	; 0x246 <pinChange+0x1c4>
@@ -796,63 +796,35 @@ void Lcd4_Shift_Right()
  636:	08 95       	ret
 
 00000638 <Lcd4_Shift_Left>:
-}
-
-void Lcd4_Shift_Left()
-{
-	Lcd4_Cmd(0x01);
  638:	81 e0       	ldi	r24, 0x01	; 1
  63a:	0e 94 41 02 	call	0x482	; 0x482 <Lcd4_Cmd>
-	Lcd4_Cmd(0x08);
  63e:	88 e0       	ldi	r24, 0x08	; 8
  640:	0e 94 41 02 	call	0x482	; 0x482 <Lcd4_Cmd>
  644:	08 95       	ret
 
 00000646 <UART_init>:
-#include "lcd.h"
-
-void UART_init()
-{
-	
-	UCSRB = 0b00011000;// Turn on the reception and Transmission
  646:	88 e1       	ldi	r24, 0x18	; 24
  648:	8a b9       	out	0x0a, r24	; 10
-	UCSRC = 0b10000110;
  64a:	86 e8       	ldi	r24, 0x86	; 134
  64c:	80 bd       	out	0x20, r24	; 32
-	//UCSRC |= (1 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);// Use 8-bit character sizes
-	UCSRA = 0b00000000;
  64e:	1b b8       	out	0x0b, r1	; 11
-	UCSRA |= (1 << RXC) | (1<<TXC);
  650:	8b b1       	in	r24, 0x0b	; 11
  652:	80 6c       	ori	r24, 0xC0	; 192
  654:	8b b9       	out	0x0b, r24	; 11
-	// | (0<<TXC)|(0<<UDRE)|(0<<FE)|(0<<DOR)|(0<UPE)|(0<<U2X)|(0<<MPCM)
-
-	//UBRRL = BAUD_PRESCALE;		// Load lower 8-bits of the baud rate
-	//UBRRH = (BAUD_PRESCALE >> 8);	// Load upper 8-bits
-	UBRRL = 0x19;
  656:	89 e1       	ldi	r24, 0x19	; 25
  658:	89 b9       	out	0x09, r24	; 9
-	UBRRH = 0x00;
  65a:	10 bc       	out	0x20, r1	; 32
  65c:	08 95       	ret
 
 0000065e <UART_RxChar>:
-}
-
-unsigned char UART_RxChar()
-{
-	while ((UCSRA & (1 << RXC)) == 0x00);// Wait till data is received
  65e:	5f 9b       	sbis	0x0b, 7	; 11
  660:	fe cf       	rjmp	.-4      	; 0x65e <UART_RxChar>
-	return UDR;		// Return the byte
  662:	8c b1       	in	r24, 0x0c	; 12
-}
  664:	08 95       	ret
 
 00000666 <get_key>:
-
+	
+}
 char get_key(){
 	
 	PORTB |= 1;
@@ -990,409 +962,385 @@ char get_key(){
 
 int main(void)
 {	
- 736:	0f 93       	push	r16
- 738:	1f 93       	push	r17
- 73a:	cf 93       	push	r28
- 73c:	df 93       	push	r29
- 73e:	cd b7       	in	r28, 0x3d	; 61
- 740:	de b7       	in	r29, 0x3e	; 62
- 742:	28 97       	sbiw	r28, 0x08	; 8
- 744:	0f b6       	in	r0, 0x3f	; 63
- 746:	f8 94       	cli
- 748:	de bf       	out	0x3e, r29	; 62
- 74a:	0f be       	out	0x3f, r0	; 63
- 74c:	cd bf       	out	0x3d, r28	; 61
+ 736:	cf 93       	push	r28
+ 738:	df 93       	push	r29
+ 73a:	cd b7       	in	r28, 0x3d	; 61
+ 73c:	de b7       	in	r29, 0x3e	; 62
+ 73e:	28 97       	sbiw	r28, 0x08	; 8
+ 740:	0f b6       	in	r0, 0x3f	; 63
+ 742:	f8 94       	cli
+ 744:	de bf       	out	0x3e, r29	; 62
+ 746:	0f be       	out	0x3f, r0	; 63
+ 748:	cd bf       	out	0x3d, r28	; 61
 	DDRD = 0b11111110;
- 74e:	8e ef       	ldi	r24, 0xFE	; 254
- 750:	81 bb       	out	0x11, r24	; 17
+ 74a:	8e ef       	ldi	r24, 0xFE	; 254
+ 74c:	81 bb       	out	0x11, r24	; 17
 	DDRB = 0b00000111;
- 752:	87 e0       	ldi	r24, 0x07	; 7
- 754:	87 bb       	out	0x17, r24	; 23
+ 74e:	87 e0       	ldi	r24, 0x07	; 7
+ 750:	87 bb       	out	0x17, r24	; 23
 	DDRC = 0xFF;
- 756:	8f ef       	ldi	r24, 0xFF	; 255
- 758:	84 bb       	out	0x14, r24	; 20
+ 752:	8f ef       	ldi	r24, 0xFF	; 255
+ 754:	84 bb       	out	0x14, r24	; 20
 	
 	UART_init();
- 75a:	0e 94 23 03 	call	0x646	; 0x646 <UART_init>
+ 756:	0e 94 23 03 	call	0x646	; 0x646 <UART_init>
 	unsigned char lock[4];
 	
 	unsigned char lock_in[4];
 	int count = 0;
- 75e:	00 e0       	ldi	r16, 0x00	; 0
- 760:	10 e0       	ldi	r17, 0x00	; 0
- 762:	11 c0       	rjmp	.+34     	; 0x786 <main+0x50>
-    /* Replace with your application code */
+ 75a:	00 e0       	ldi	r16, 0x00	; 0
+ 75c:	10 e0       	ldi	r17, 0x00	; 0
+ 75e:	11 c0       	rjmp	.+34     	; 0x782 <main+0x4c>
     while (1) 
-    {	
+    {
+		
 		
 		while(count < 4){
 			lock[count] = UART_RxChar();
- 764:	0e 94 2f 03 	call	0x65e	; 0x65e <UART_RxChar>
- 768:	e1 e0       	ldi	r30, 0x01	; 1
- 76a:	f0 e0       	ldi	r31, 0x00	; 0
- 76c:	ec 0f       	add	r30, r28
- 76e:	fd 1f       	adc	r31, r29
- 770:	e0 0f       	add	r30, r16
- 772:	f1 1f       	adc	r31, r17
- 774:	80 83       	st	Z, r24
+ 760:	0e 94 2f 03 	call	0x65e	; 0x65e <UART_RxChar>
+ 764:	e1 e0       	ldi	r30, 0x01	; 1
+ 766:	f0 e0       	ldi	r31, 0x00	; 0
+ 768:	ec 0f       	add	r30, r28
+ 76a:	fd 1f       	adc	r31, r29
+ 76c:	e0 0f       	add	r30, r16
+ 76e:	f1 1f       	adc	r31, r17
+ 770:	80 83       	st	Z, r24
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 776:	8f e4       	ldi	r24, 0x4F	; 79
- 778:	93 ec       	ldi	r25, 0xC3	; 195
- 77a:	01 97       	sbiw	r24, 0x01	; 1
- 77c:	f1 f7       	brne	.-4      	; 0x77a <main+0x44>
- 77e:	00 c0       	rjmp	.+0      	; 0x780 <main+0x4a>
- 780:	00 00       	nop
+ 772:	8f e4       	ldi	r24, 0x4F	; 79
+ 774:	93 ec       	ldi	r25, 0xC3	; 195
+ 776:	01 97       	sbiw	r24, 0x01	; 1
+ 778:	f1 f7       	brne	.-4      	; 0x776 <main+0x40>
+ 77a:	00 c0       	rjmp	.+0      	; 0x77c <main+0x46>
+ 77c:	00 00       	nop
 			
 			_delay_ms(200);
 			count++;
- 782:	0f 5f       	subi	r16, 0xFF	; 255
- 784:	1f 4f       	sbci	r17, 0xFF	; 255
-	
+ 77e:	0f 5f       	subi	r16, 0xFF	; 255
+ 780:	1f 4f       	sbci	r17, 0xFF	; 255
     /* Replace with your application code */
     while (1) 
-    {	
+    {
+		
 		
 		while(count < 4){
- 786:	04 30       	cpi	r16, 0x04	; 4
- 788:	11 05       	cpc	r17, r1
- 78a:	64 f3       	brlt	.-40     	; 0x764 <main+0x2e>
+ 782:	04 30       	cpi	r16, 0x04	; 4
+ 784:	11 05       	cpc	r17, r1
+ 786:	64 f3       	brlt	.-40     	; 0x760 <main+0x2a>
 			
 			_delay_ms(200);
 			count++;
 		}
 		
 		if(PINB & (1<<PINB7)){ // IF MOTION IS DETECTED
- 78c:	b7 9b       	sbis	0x16, 7	; 22
- 78e:	fb cf       	rjmp	.-10     	; 0x786 <main+0x50>
- 790:	87 ea       	ldi	r24, 0xA7	; 167
- 792:	91 e6       	ldi	r25, 0x61	; 97
- 794:	01 97       	sbiw	r24, 0x01	; 1
- 796:	f1 f7       	brne	.-4      	; 0x794 <main+0x5e>
- 798:	00 c0       	rjmp	.+0      	; 0x79a <main+0x64>
- 79a:	00 00       	nop
+ 788:	b7 9b       	sbis	0x16, 7	; 22
+ 78a:	fb cf       	rjmp	.-10     	; 0x782 <main+0x4c>
+ 78c:	87 ea       	ldi	r24, 0xA7	; 167
+ 78e:	91 e6       	ldi	r25, 0x61	; 97
+ 790:	01 97       	sbiw	r24, 0x01	; 1
+ 792:	f1 f7       	brne	.-4      	; 0x790 <main+0x5a>
+ 794:	00 c0       	rjmp	.+0      	; 0x796 <main+0x60>
+ 796:	00 00       	nop
 			_delay_ms(100);
 			Lcd4_Init();
- 79c:	0e 94 8b 02 	call	0x516	; 0x516 <Lcd4_Init>
+ 798:	0e 94 8b 02 	call	0x516	; 0x516 <Lcd4_Init>
 			Lcd4_Write_String("Motion Detected!");
- 7a0:	80 e6       	ldi	r24, 0x60	; 96
- 7a2:	90 e0       	ldi	r25, 0x00	; 0
- 7a4:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
- 7a8:	9f e3       	ldi	r25, 0x3F	; 63
- 7aa:	2d e0       	ldi	r18, 0x0D	; 13
- 7ac:	83 e0       	ldi	r24, 0x03	; 3
- 7ae:	91 50       	subi	r25, 0x01	; 1
- 7b0:	20 40       	sbci	r18, 0x00	; 0
- 7b2:	80 40       	sbci	r24, 0x00	; 0
- 7b4:	e1 f7       	brne	.-8      	; 0x7ae <main+0x78>
- 7b6:	00 c0       	rjmp	.+0      	; 0x7b8 <main+0x82>
- 7b8:	00 00       	nop
+ 79c:	80 e6       	ldi	r24, 0x60	; 96
+ 79e:	90 e0       	ldi	r25, 0x00	; 0
+ 7a0:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
+ 7a4:	9f e3       	ldi	r25, 0x3F	; 63
+ 7a6:	2d e0       	ldi	r18, 0x0D	; 13
+ 7a8:	83 e0       	ldi	r24, 0x03	; 3
+ 7aa:	91 50       	subi	r25, 0x01	; 1
+ 7ac:	20 40       	sbci	r18, 0x00	; 0
+ 7ae:	80 40       	sbci	r24, 0x00	; 0
+ 7b0:	e1 f7       	brne	.-8      	; 0x7aa <main+0x74>
+ 7b2:	00 c0       	rjmp	.+0      	; 0x7b4 <main+0x7e>
+ 7b4:	00 00       	nop
 			_delay_ms(1000);
 			Lcd4_Clear();
- 7ba:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
+ 7b6:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
 			
 			Lcd4_Write_String("Lock: ");
- 7be:	81 e7       	ldi	r24, 0x71	; 113
- 7c0:	90 e0       	ldi	r25, 0x00	; 0
- 7c2:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
+ 7ba:	81 e7       	ldi	r24, 0x71	; 113
+ 7bc:	90 e0       	ldi	r25, 0x00	; 0
+ 7be:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
 			Lcd4_Set_Cursor(2,0);
- 7c6:	60 e0       	ldi	r22, 0x00	; 0
- 7c8:	82 e0       	ldi	r24, 0x02	; 2
- 7ca:	0e 94 6d 02 	call	0x4da	; 0x4da <Lcd4_Set_Cursor>
+ 7c2:	60 e0       	ldi	r22, 0x00	; 0
+ 7c4:	82 e0       	ldi	r24, 0x02	; 2
+ 7c6:	0e 94 6d 02 	call	0x4da	; 0x4da <Lcd4_Set_Cursor>
 			
 			count = 0;
- 7ce:	00 e0       	ldi	r16, 0x00	; 0
- 7d0:	10 e0       	ldi	r17, 0x00	; 0
+ 7ca:	00 e0       	ldi	r16, 0x00	; 0
+ 7cc:	10 e0       	ldi	r17, 0x00	; 0
 			while(count < 4){
- 7d2:	11 c0       	rjmp	.+34     	; 0x7f6 <main+0xc0>
+ 7ce:	11 c0       	rjmp	.+34     	; 0x7f2 <main+0xbc>
 				Lcd4_Write_Char(lock[count]);
- 7d4:	e1 e0       	ldi	r30, 0x01	; 1
- 7d6:	f0 e0       	ldi	r31, 0x00	; 0
- 7d8:	ec 0f       	add	r30, r28
- 7da:	fd 1f       	adc	r31, r29
- 7dc:	e0 0f       	add	r30, r16
- 7de:	f1 1f       	adc	r31, r17
- 7e0:	80 81       	ld	r24, Z
- 7e2:	0e 94 bf 02 	call	0x57e	; 0x57e <Lcd4_Write_Char>
- 7e6:	87 ea       	ldi	r24, 0xA7	; 167
- 7e8:	91 e6       	ldi	r25, 0x61	; 97
- 7ea:	01 97       	sbiw	r24, 0x01	; 1
- 7ec:	f1 f7       	brne	.-4      	; 0x7ea <main+0xb4>
- 7ee:	00 c0       	rjmp	.+0      	; 0x7f0 <main+0xba>
- 7f0:	00 00       	nop
+ 7d0:	e1 e0       	ldi	r30, 0x01	; 1
+ 7d2:	f0 e0       	ldi	r31, 0x00	; 0
+ 7d4:	ec 0f       	add	r30, r28
+ 7d6:	fd 1f       	adc	r31, r29
+ 7d8:	e0 0f       	add	r30, r16
+ 7da:	f1 1f       	adc	r31, r17
+ 7dc:	80 81       	ld	r24, Z
+ 7de:	0e 94 bf 02 	call	0x57e	; 0x57e <Lcd4_Write_Char>
+ 7e2:	87 ea       	ldi	r24, 0xA7	; 167
+ 7e4:	91 e6       	ldi	r25, 0x61	; 97
+ 7e6:	01 97       	sbiw	r24, 0x01	; 1
+ 7e8:	f1 f7       	brne	.-4      	; 0x7e6 <main+0xb0>
+ 7ea:	00 c0       	rjmp	.+0      	; 0x7ec <main+0xb6>
+ 7ec:	00 00       	nop
 				_delay_ms(100);
 				count++;
- 7f2:	0f 5f       	subi	r16, 0xFF	; 255
- 7f4:	1f 4f       	sbci	r17, 0xFF	; 255
+ 7ee:	0f 5f       	subi	r16, 0xFF	; 255
+ 7f0:	1f 4f       	sbci	r17, 0xFF	; 255
 			
 			Lcd4_Write_String("Lock: ");
 			Lcd4_Set_Cursor(2,0);
 			
 			count = 0;
 			while(count < 4){
- 7f6:	04 30       	cpi	r16, 0x04	; 4
- 7f8:	11 05       	cpc	r17, r1
- 7fa:	64 f3       	brlt	.-40     	; 0x7d4 <main+0x9e>
- 7fc:	9f e9       	ldi	r25, 0x9F	; 159
- 7fe:	26 e8       	ldi	r18, 0x86	; 134
- 800:	81 e0       	ldi	r24, 0x01	; 1
- 802:	91 50       	subi	r25, 0x01	; 1
- 804:	20 40       	sbci	r18, 0x00	; 0
- 806:	80 40       	sbci	r24, 0x00	; 0
- 808:	e1 f7       	brne	.-8      	; 0x802 <__DATA_REGION_LENGTH__+0x2>
- 80a:	00 c0       	rjmp	.+0      	; 0x80c <__DATA_REGION_LENGTH__+0xc>
- 80c:	00 00       	nop
+ 7f2:	04 30       	cpi	r16, 0x04	; 4
+ 7f4:	11 05       	cpc	r17, r1
+ 7f6:	64 f3       	brlt	.-40     	; 0x7d0 <main+0x9a>
+ 7f8:	9f e9       	ldi	r25, 0x9F	; 159
+ 7fa:	26 e8       	ldi	r18, 0x86	; 134
+ 7fc:	81 e0       	ldi	r24, 0x01	; 1
+ 7fe:	91 50       	subi	r25, 0x01	; 1
+ 800:	20 40       	sbci	r18, 0x00	; 0
+ 802:	80 40       	sbci	r24, 0x00	; 0
+ 804:	e1 f7       	brne	.-8      	; 0x7fe <main+0xc8>
+ 806:	00 c0       	rjmp	.+0      	; 0x808 <__DATA_REGION_LENGTH__+0x8>
+ 808:	00 00       	nop
 				Lcd4_Write_Char(lock[count]);
 				_delay_ms(100);
 				count++;
 			}
 			_delay_ms(500);
 			Lcd4_Clear();
- 80e:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
+ 80a:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
 			
 			Lcd4_Write_String("Input your unique passcode now");
- 812:	88 e7       	ldi	r24, 0x78	; 120
- 814:	90 e0       	ldi	r25, 0x00	; 0
- 816:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
+ 80e:	88 e7       	ldi	r24, 0x78	; 120
+ 810:	90 e0       	ldi	r25, 0x00	; 0
+ 812:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
 			for(int i = 0; i<16; i++){
- 81a:	00 e0       	ldi	r16, 0x00	; 0
- 81c:	10 e0       	ldi	r17, 0x00	; 0
- 81e:	0a c0       	rjmp	.+20     	; 0x834 <__DATA_REGION_LENGTH__+0x34>
- 820:	87 ea       	ldi	r24, 0xA7	; 167
- 822:	91 e6       	ldi	r25, 0x61	; 97
- 824:	01 97       	sbiw	r24, 0x01	; 1
- 826:	f1 f7       	brne	.-4      	; 0x824 <__DATA_REGION_LENGTH__+0x24>
- 828:	00 c0       	rjmp	.+0      	; 0x82a <__DATA_REGION_LENGTH__+0x2a>
- 82a:	00 00       	nop
+ 816:	00 e0       	ldi	r16, 0x00	; 0
+ 818:	10 e0       	ldi	r17, 0x00	; 0
+ 81a:	0a c0       	rjmp	.+20     	; 0x830 <__DATA_REGION_LENGTH__+0x30>
+ 81c:	87 ea       	ldi	r24, 0xA7	; 167
+ 81e:	91 e6       	ldi	r25, 0x61	; 97
+ 820:	01 97       	sbiw	r24, 0x01	; 1
+ 822:	f1 f7       	brne	.-4      	; 0x820 <__DATA_REGION_LENGTH__+0x20>
+ 824:	00 c0       	rjmp	.+0      	; 0x826 <__DATA_REGION_LENGTH__+0x26>
+ 826:	00 00       	nop
 				_delay_ms(100);
 				Lcd4_Shift_Left();
- 82c:	0e 94 1c 03 	call	0x638	; 0x638 <Lcd4_Shift_Left>
+ 828:	0e 94 1c 03 	call	0x638	; 0x638 <Lcd4_Shift_Left>
 			}
 			_delay_ms(500);
 			Lcd4_Clear();
 			
 			Lcd4_Write_String("Input your unique passcode now");
 			for(int i = 0; i<16; i++){
- 830:	0f 5f       	subi	r16, 0xFF	; 255
- 832:	1f 4f       	sbci	r17, 0xFF	; 255
- 834:	00 31       	cpi	r16, 0x10	; 16
- 836:	11 05       	cpc	r17, r1
- 838:	9c f3       	brlt	.-26     	; 0x820 <__DATA_REGION_LENGTH__+0x20>
+ 82c:	0f 5f       	subi	r16, 0xFF	; 255
+ 82e:	1f 4f       	sbci	r17, 0xFF	; 255
+ 830:	00 31       	cpi	r16, 0x10	; 16
+ 832:	11 05       	cpc	r17, r1
+ 834:	9c f3       	brlt	.-26     	; 0x81c <__DATA_REGION_LENGTH__+0x1c>
 				_delay_ms(100);
 				Lcd4_Shift_Left();
 			}
 			Lcd4_Clear();
- 83a:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
+ 836:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
 			Lcd4_Write_String("Your Passcode: ");
- 83e:	87 e9       	ldi	r24, 0x97	; 151
- 840:	90 e0       	ldi	r25, 0x00	; 0
- 842:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
+ 83a:	87 e9       	ldi	r24, 0x97	; 151
+ 83c:	90 e0       	ldi	r25, 0x00	; 0
+ 83e:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
 			Lcd4_Set_Cursor(2, 0);
- 846:	60 e0       	ldi	r22, 0x00	; 0
- 848:	82 e0       	ldi	r24, 0x02	; 2
- 84a:	0e 94 6d 02 	call	0x4da	; 0x4da <Lcd4_Set_Cursor>
- 84e:	8f e4       	ldi	r24, 0x4F	; 79
- 850:	93 ec       	ldi	r25, 0xC3	; 195
- 852:	01 97       	sbiw	r24, 0x01	; 1
- 854:	f1 f7       	brne	.-4      	; 0x852 <__DATA_REGION_LENGTH__+0x52>
- 856:	00 c0       	rjmp	.+0      	; 0x858 <__DATA_REGION_LENGTH__+0x58>
- 858:	00 00       	nop
-	UART_init();
-	unsigned char lock[4];
-	
-	unsigned char lock_in[4];
-	int count = 0;
-	int input_pass = 0;
- 85a:	00 e0       	ldi	r16, 0x00	; 0
- 85c:	10 e0       	ldi	r17, 0x00	; 0
- 85e:	1a c0       	rjmp	.+52     	; 0x894 <__stack+0x35>
-			Lcd4_Write_String("Your Passcode: ");
-			Lcd4_Set_Cursor(2, 0);
+ 842:	60 e0       	ldi	r22, 0x00	; 0
+ 844:	82 e0       	ldi	r24, 0x02	; 2
+ 846:	0e 94 6d 02 	call	0x4da	; 0x4da <Lcd4_Set_Cursor>
+ 84a:	8f e4       	ldi	r24, 0x4F	; 79
+ 84c:	93 ec       	ldi	r25, 0xC3	; 195
+ 84e:	01 97       	sbiw	r24, 0x01	; 1
+ 850:	f1 f7       	brne	.-4      	; 0x84e <__DATA_REGION_LENGTH__+0x4e>
+ 852:	00 c0       	rjmp	.+0      	; 0x854 <__DATA_REGION_LENGTH__+0x54>
+ 854:	00 00       	nop
+ 856:	00 e0       	ldi	r16, 0x00	; 0
+ 858:	10 e0       	ldi	r17, 0x00	; 0
+ 85a:	1a c0       	rjmp	.+52     	; 0x890 <__stack+0x31>
 			_delay_ms(200);
 			
 			while(input_pass < 4){
 				if(get_key() != 0){
- 860:	0e 94 33 03 	call	0x666	; 0x666 <get_key>
- 864:	88 23       	and	r24, r24
- 866:	b1 f0       	breq	.+44     	; 0x894 <__stack+0x35>
+ 85c:	0e 94 33 03 	call	0x666	; 0x666 <get_key>
+ 860:	88 23       	and	r24, r24
+ 862:	b1 f0       	breq	.+44     	; 0x890 <__stack+0x31>
 					lock_in[input_pass] = get_key();
- 868:	0e 94 33 03 	call	0x666	; 0x666 <get_key>
- 86c:	e5 e0       	ldi	r30, 0x05	; 5
- 86e:	f0 e0       	ldi	r31, 0x00	; 0
- 870:	ec 0f       	add	r30, r28
- 872:	fd 1f       	adc	r31, r29
- 874:	e0 0f       	add	r30, r16
- 876:	f1 1f       	adc	r31, r17
- 878:	80 83       	st	Z, r24
+ 864:	0e 94 33 03 	call	0x666	; 0x666 <get_key>
+ 868:	e5 e0       	ldi	r30, 0x05	; 5
+ 86a:	f0 e0       	ldi	r31, 0x00	; 0
+ 86c:	ec 0f       	add	r30, r28
+ 86e:	fd 1f       	adc	r31, r29
+ 870:	e0 0f       	add	r30, r16
+ 872:	f1 1f       	adc	r31, r17
+ 874:	80 83       	st	Z, r24
 					Lcd4_Write_Char(lock_in[input_pass]);
- 87a:	0e 94 bf 02 	call	0x57e	; 0x57e <Lcd4_Write_Char>
- 87e:	9f e9       	ldi	r25, 0x9F	; 159
- 880:	26 e8       	ldi	r18, 0x86	; 134
- 882:	81 e0       	ldi	r24, 0x01	; 1
- 884:	91 50       	subi	r25, 0x01	; 1
- 886:	20 40       	sbci	r18, 0x00	; 0
- 888:	80 40       	sbci	r24, 0x00	; 0
- 88a:	e1 f7       	brne	.-8      	; 0x884 <__stack+0x25>
- 88c:	00 c0       	rjmp	.+0      	; 0x88e <__stack+0x2f>
- 88e:	00 00       	nop
+ 876:	0e 94 bf 02 	call	0x57e	; 0x57e <Lcd4_Write_Char>
+ 87a:	9f e9       	ldi	r25, 0x9F	; 159
+ 87c:	26 e8       	ldi	r18, 0x86	; 134
+ 87e:	81 e0       	ldi	r24, 0x01	; 1
+ 880:	91 50       	subi	r25, 0x01	; 1
+ 882:	20 40       	sbci	r18, 0x00	; 0
+ 884:	80 40       	sbci	r24, 0x00	; 0
+ 886:	e1 f7       	brne	.-8      	; 0x880 <__stack+0x21>
+ 888:	00 c0       	rjmp	.+0      	; 0x88a <__stack+0x2b>
+ 88a:	00 00       	nop
 					_delay_ms(500);
 					input_pass++;
- 890:	0f 5f       	subi	r16, 0xFF	; 255
- 892:	1f 4f       	sbci	r17, 0xFF	; 255
+ 88c:	0f 5f       	subi	r16, 0xFF	; 255
+ 88e:	1f 4f       	sbci	r17, 0xFF	; 255
 			Lcd4_Clear();
 			Lcd4_Write_String("Your Passcode: ");
 			Lcd4_Set_Cursor(2, 0);
 			_delay_ms(200);
 			
 			while(input_pass < 4){
- 894:	04 30       	cpi	r16, 0x04	; 4
- 896:	11 05       	cpc	r17, r1
- 898:	1c f3       	brlt	.-58     	; 0x860 <__stack+0x1>
+ 890:	04 30       	cpi	r16, 0x04	; 4
+ 892:	11 05       	cpc	r17, r1
+ 894:	1c f3       	brlt	.-58     	; 0x85c <__DATA_REGION_LENGTH__+0x5c>
 					Lcd4_Write_Char(lock_in[input_pass]);
 					_delay_ms(500);
 					input_pass++;
 				}
 			}
 			Lcd4_Clear();
- 89a:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
+ 896:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
 			int i;
 			for(i = 0; i<4; i++){
- 89e:	00 e0       	ldi	r16, 0x00	; 0
- 8a0:	10 e0       	ldi	r17, 0x00	; 0
- 8a2:	20 c0       	rjmp	.+64     	; 0x8e4 <__stack+0x85>
+ 89a:	00 e0       	ldi	r16, 0x00	; 0
+ 89c:	10 e0       	ldi	r17, 0x00	; 0
+ 89e:	20 c0       	rjmp	.+64     	; 0x8e0 <__stack+0x81>
 				if(lock[i] != lock_in[i]){
- 8a4:	e1 e0       	ldi	r30, 0x01	; 1
- 8a6:	f0 e0       	ldi	r31, 0x00	; 0
- 8a8:	ec 0f       	add	r30, r28
- 8aa:	fd 1f       	adc	r31, r29
- 8ac:	e0 0f       	add	r30, r16
- 8ae:	f1 1f       	adc	r31, r17
- 8b0:	90 81       	ld	r25, Z
- 8b2:	e5 e0       	ldi	r30, 0x05	; 5
- 8b4:	f0 e0       	ldi	r31, 0x00	; 0
- 8b6:	ec 0f       	add	r30, r28
- 8b8:	fd 1f       	adc	r31, r29
- 8ba:	e0 0f       	add	r30, r16
- 8bc:	f1 1f       	adc	r31, r17
- 8be:	80 81       	ld	r24, Z
- 8c0:	98 17       	cp	r25, r24
- 8c2:	71 f0       	breq	.+28     	; 0x8e0 <__stack+0x81>
+ 8a0:	e1 e0       	ldi	r30, 0x01	; 1
+ 8a2:	f0 e0       	ldi	r31, 0x00	; 0
+ 8a4:	ec 0f       	add	r30, r28
+ 8a6:	fd 1f       	adc	r31, r29
+ 8a8:	e0 0f       	add	r30, r16
+ 8aa:	f1 1f       	adc	r31, r17
+ 8ac:	90 81       	ld	r25, Z
+ 8ae:	e5 e0       	ldi	r30, 0x05	; 5
+ 8b0:	f0 e0       	ldi	r31, 0x00	; 0
+ 8b2:	ec 0f       	add	r30, r28
+ 8b4:	fd 1f       	adc	r31, r29
+ 8b6:	e0 0f       	add	r30, r16
+ 8b8:	f1 1f       	adc	r31, r17
+ 8ba:	80 81       	ld	r24, Z
+ 8bc:	98 17       	cp	r25, r24
+ 8be:	71 f0       	breq	.+28     	; 0x8dc <__stack+0x7d>
 					Lcd4_Write_String("Wrong Passcode!");
- 8c4:	87 ea       	ldi	r24, 0xA7	; 167
- 8c6:	90 e0       	ldi	r25, 0x00	; 0
- 8c8:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
- 8cc:	9f e3       	ldi	r25, 0x3F	; 63
- 8ce:	2d e0       	ldi	r18, 0x0D	; 13
- 8d0:	83 e0       	ldi	r24, 0x03	; 3
- 8d2:	91 50       	subi	r25, 0x01	; 1
- 8d4:	20 40       	sbci	r18, 0x00	; 0
- 8d6:	80 40       	sbci	r24, 0x00	; 0
- 8d8:	e1 f7       	brne	.-8      	; 0x8d2 <__stack+0x73>
- 8da:	00 c0       	rjmp	.+0      	; 0x8dc <__stack+0x7d>
- 8dc:	00 00       	nop
- 8de:	05 c0       	rjmp	.+10     	; 0x8ea <__stack+0x8b>
+ 8c0:	87 ea       	ldi	r24, 0xA7	; 167
+ 8c2:	90 e0       	ldi	r25, 0x00	; 0
+ 8c4:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
+ 8c8:	9f e3       	ldi	r25, 0x3F	; 63
+ 8ca:	2d e0       	ldi	r18, 0x0D	; 13
+ 8cc:	83 e0       	ldi	r24, 0x03	; 3
+ 8ce:	91 50       	subi	r25, 0x01	; 1
+ 8d0:	20 40       	sbci	r18, 0x00	; 0
+ 8d2:	80 40       	sbci	r24, 0x00	; 0
+ 8d4:	e1 f7       	brne	.-8      	; 0x8ce <__stack+0x6f>
+ 8d6:	00 c0       	rjmp	.+0      	; 0x8d8 <__stack+0x79>
+ 8d8:	00 00       	nop
+ 8da:	05 c0       	rjmp	.+10     	; 0x8e6 <__stack+0x87>
 					input_pass++;
 				}
 			}
 			Lcd4_Clear();
 			int i;
 			for(i = 0; i<4; i++){
- 8e0:	0f 5f       	subi	r16, 0xFF	; 255
- 8e2:	1f 4f       	sbci	r17, 0xFF	; 255
- 8e4:	04 30       	cpi	r16, 0x04	; 4
- 8e6:	11 05       	cpc	r17, r1
- 8e8:	ec f2       	brlt	.-70     	; 0x8a4 <__stack+0x45>
-					_delay_ms(1000);
+ 8dc:	0f 5f       	subi	r16, 0xFF	; 255
+ 8de:	1f 4f       	sbci	r17, 0xFF	; 255
+ 8e0:	04 30       	cpi	r16, 0x04	; 4
+ 8e2:	11 05       	cpc	r17, r1
+ 8e4:	ec f2       	brlt	.-70     	; 0x8a0 <__stack+0x41>
+					
 					break;
 				}
 			}
 			
 			if(i == 4){
- 8ea:	04 30       	cpi	r16, 0x04	; 4
- 8ec:	11 05       	cpc	r17, r1
- 8ee:	51 f5       	brne	.+84     	; 0x944 <__stack+0xe5>
+ 8e6:	04 30       	cpi	r16, 0x04	; 4
+ 8e8:	11 05       	cpc	r17, r1
+ 8ea:	51 f5       	brne	.+84     	; 0x940 <__stack+0xe1>
 				Lcd4_Write_String("Correct Passcode.");
- 8f0:	87 eb       	ldi	r24, 0xB7	; 183
- 8f2:	90 e0       	ldi	r25, 0x00	; 0
- 8f4:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
+ 8ec:	87 eb       	ldi	r24, 0xB7	; 183
+ 8ee:	90 e0       	ldi	r25, 0x00	; 0
+ 8f0:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
 				
 				 //Rotates Motor Anticlockwise
 				 PORTC = 0x01;
- 8f8:	81 e0       	ldi	r24, 0x01	; 1
- 8fa:	85 bb       	out	0x15, r24	; 21
- 8fc:	9f ef       	ldi	r25, 0xFF	; 255
- 8fe:	24 e3       	ldi	r18, 0x34	; 52
- 900:	8c e0       	ldi	r24, 0x0C	; 12
- 902:	91 50       	subi	r25, 0x01	; 1
- 904:	20 40       	sbci	r18, 0x00	; 0
- 906:	80 40       	sbci	r24, 0x00	; 0
- 908:	e1 f7       	brne	.-8      	; 0x902 <__stack+0xa3>
- 90a:	00 c0       	rjmp	.+0      	; 0x90c <__stack+0xad>
- 90c:	00 00       	nop
+ 8f4:	81 e0       	ldi	r24, 0x01	; 1
+ 8f6:	85 bb       	out	0x15, r24	; 21
+ 8f8:	9f ef       	ldi	r25, 0xFF	; 255
+ 8fa:	24 e3       	ldi	r18, 0x34	; 52
+ 8fc:	8c e0       	ldi	r24, 0x0C	; 12
+ 8fe:	91 50       	subi	r25, 0x01	; 1
+ 900:	20 40       	sbci	r18, 0x00	; 0
+ 902:	80 40       	sbci	r24, 0x00	; 0
+ 904:	e1 f7       	brne	.-8      	; 0x8fe <__stack+0x9f>
+ 906:	00 c0       	rjmp	.+0      	; 0x908 <__stack+0xa9>
+ 908:	00 00       	nop
 				 _delay_ms(4000);
 
 				 //Stops Motor
 				 PORTC = 0x00;
- 90e:	15 ba       	out	0x15, r1	; 21
- 910:	9f e9       	ldi	r25, 0x9F	; 159
- 912:	26 e8       	ldi	r18, 0x86	; 134
- 914:	81 e0       	ldi	r24, 0x01	; 1
- 916:	91 50       	subi	r25, 0x01	; 1
- 918:	20 40       	sbci	r18, 0x00	; 0
- 91a:	80 40       	sbci	r24, 0x00	; 0
- 91c:	e1 f7       	brne	.-8      	; 0x916 <__stack+0xb7>
- 91e:	00 c0       	rjmp	.+0      	; 0x920 <__stack+0xc1>
- 920:	00 00       	nop
+ 90a:	15 ba       	out	0x15, r1	; 21
+ 90c:	9f e9       	ldi	r25, 0x9F	; 159
+ 90e:	26 e8       	ldi	r18, 0x86	; 134
+ 910:	81 e0       	ldi	r24, 0x01	; 1
+ 912:	91 50       	subi	r25, 0x01	; 1
+ 914:	20 40       	sbci	r18, 0x00	; 0
+ 916:	80 40       	sbci	r24, 0x00	; 0
+ 918:	e1 f7       	brne	.-8      	; 0x912 <__stack+0xb3>
+ 91a:	00 c0       	rjmp	.+0      	; 0x91c <__stack+0xbd>
+ 91c:	00 00       	nop
 				 _delay_ms(500);
 				 
 				 Lcd4_Set_Cursor(2, 0);
- 922:	60 e0       	ldi	r22, 0x00	; 0
- 924:	82 e0       	ldi	r24, 0x02	; 2
- 926:	0e 94 6d 02 	call	0x4da	; 0x4da <Lcd4_Set_Cursor>
+ 91e:	60 e0       	ldi	r22, 0x00	; 0
+ 920:	82 e0       	ldi	r24, 0x02	; 2
+ 922:	0e 94 6d 02 	call	0x4da	; 0x4da <Lcd4_Set_Cursor>
 				 Lcd4_Write_String("Proceed To Vote");
- 92a:	89 ec       	ldi	r24, 0xC9	; 201
- 92c:	90 e0       	ldi	r25, 0x00	; 0
- 92e:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
- 932:	9f e3       	ldi	r25, 0x3F	; 63
- 934:	2d e0       	ldi	r18, 0x0D	; 13
- 936:	83 e0       	ldi	r24, 0x03	; 3
- 938:	91 50       	subi	r25, 0x01	; 1
- 93a:	20 40       	sbci	r18, 0x00	; 0
- 93c:	80 40       	sbci	r24, 0x00	; 0
- 93e:	e1 f7       	brne	.-8      	; 0x938 <__stack+0xd9>
- 940:	00 c0       	rjmp	.+0      	; 0x942 <__stack+0xe3>
- 942:	00 00       	nop
+ 926:	89 ec       	ldi	r24, 0xC9	; 201
+ 928:	90 e0       	ldi	r25, 0x00	; 0
+ 92a:	0e 94 06 03 	call	0x60c	; 0x60c <Lcd4_Write_String>
+ 92e:	9f e3       	ldi	r25, 0x3F	; 63
+ 930:	2d e0       	ldi	r18, 0x0D	; 13
+ 932:	83 e0       	ldi	r24, 0x03	; 3
+ 934:	91 50       	subi	r25, 0x01	; 1
+ 936:	20 40       	sbci	r18, 0x00	; 0
+ 938:	80 40       	sbci	r24, 0x00	; 0
+ 93a:	e1 f7       	brne	.-8      	; 0x934 <__stack+0xd5>
+ 93c:	00 c0       	rjmp	.+0      	; 0x93e <__stack+0xdf>
+ 93e:	00 00       	nop
+				
 				 _delay_ms(1000);
 			}
 			
 			Lcd4_Clear();
- 944:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
-		}
-		
-		
-		
-    }
-}
- 948:	80 e0       	ldi	r24, 0x00	; 0
- 94a:	90 e0       	ldi	r25, 0x00	; 0
- 94c:	28 96       	adiw	r28, 0x08	; 8
- 94e:	0f b6       	in	r0, 0x3f	; 63
- 950:	f8 94       	cli
- 952:	de bf       	out	0x3e, r29	; 62
- 954:	0f be       	out	0x3f, r0	; 63
- 956:	cd bf       	out	0x3d, r28	; 61
- 958:	df 91       	pop	r29
- 95a:	cf 91       	pop	r28
- 95c:	1f 91       	pop	r17
- 95e:	0f 91       	pop	r16
- 960:	08 95       	ret
+ 940:	0e 94 66 02 	call	0x4cc	; 0x4cc <Lcd4_Clear>
+			count = 0;
+ 944:	00 e0       	ldi	r16, 0x00	; 0
+ 946:	10 e0       	ldi	r17, 0x00	; 0
+ 948:	1c cf       	rjmp	.-456    	; 0x782 <main+0x4c>
 
-00000962 <_exit>:
- 962:	f8 94       	cli
+0000094a <_exit>:
+ 94a:	f8 94       	cli
 
-00000964 <__stop_program>:
- 964:	ff cf       	rjmp	.-2      	; 0x964 <__stop_program>
+0000094c <__stop_program>:
+ 94c:	ff cf       	rjmp	.-2      	; 0x94c <__stop_program>

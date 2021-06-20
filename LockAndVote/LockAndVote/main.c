@@ -40,7 +40,11 @@ unsigned char UART_RxChar()
 	while ((UCSRA & (1 << RXC)) == 0x00);// Wait till data is received
 	return UDR;		// Return the byte
 }
-
+void UART_TxChar(unsigned char data){
+	while((UCSRA & (1 << UDRE)) == 0x00);
+	UDR = data;
+	
+}
 char get_key(){
 	
 	PORTB |= 1;
@@ -86,7 +90,8 @@ int main(void)
 	
     /* Replace with your application code */
     while (1) 
-    {	
+    {
+		
 		
 		while(count < 4){
 			lock[count] = UART_RxChar();
@@ -138,6 +143,7 @@ int main(void)
 				if(lock[i] != lock_in[i]){
 					Lcd4_Write_String("Wrong Passcode!");
 					_delay_ms(1000);
+					
 					break;
 				}
 			}
@@ -155,11 +161,13 @@ int main(void)
 				 
 				 Lcd4_Set_Cursor(2, 0);
 				 Lcd4_Write_String("Proceed To Vote");
+				
 				 _delay_ms(1000);
 			}
 			
 			Lcd4_Clear();
-			break;
+			count = 0;
+			input_pass = 0;
 			
 		}
 		
