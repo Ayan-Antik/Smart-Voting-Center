@@ -75,41 +75,95 @@ int main(void)
 	DDRD = 0b11111110;
 	DDRB = 0b00000111;
 	DDRC = 0xFF;
-	Lcd4_Init();
+	
 	UART_init();
 	unsigned char lock[4];
 	
 	unsigned char lock_in[4];
 	int count = 0;
 	int input_pass = 0;
-	Lcd4_Write_String("Lock: ");
-	Lcd4_Set_Cursor(2,0);
+	
+	
     /* Replace with your application code */
     while (1) 
     {	
+		
 		while(count < 4){
 			lock[count] = UART_RxChar();
-			Lcd4_Write_Char(lock[count]);
+			
 			_delay_ms(200);
-			count++;	
+			count++;
 		}
-		_delay_ms(500);
-		Lcd4_Clear();
-		Lcd4_Write_String("Your Lock Input:");
-		Lcd4_Set_Cursor(2, 0);
-		_delay_ms(500);
 		
-		while(input_pass < 4){
-			if(get_key() != 0){
-				lock_in[input_pass] = get_key();
-				Lcd4_Write_Char(lock_in[input_pass]);
-				_delay_ms(500);
-				input_pass++;
+		if(PINB & (1<<PINB7)){ // IF MOTION IS DETECTED
+			_delay_ms(100);
+			Lcd4_Init();
+			Lcd4_Write_String("Motion Detected!");
+			_delay_ms(1000);
+			Lcd4_Clear();
+			
+			Lcd4_Write_String("Lock: ");
+			Lcd4_Set_Cursor(2,0);
+			
+			count = 0;
+			while(count < 4){
+				Lcd4_Write_Char(lock[count]);
+				_delay_ms(100);
+				count++;
 			}
+			_delay_ms(500);
+			Lcd4_Clear();
+			
+			Lcd4_Write_String("Input your unique passcode now");
+			for(int i = 0; i<16; i++){
+				_delay_ms(100);
+				Lcd4_Shift_Left();
+			}
+			Lcd4_Clear();
+			Lcd4_Write_String("Your Passcode: ");
+			Lcd4_Set_Cursor(2, 0);
+			_delay_ms(200);
+			
+			while(input_pass < 4){
+				if(get_key() != 0){
+					lock_in[input_pass] = get_key();
+					Lcd4_Write_Char(lock_in[input_pass]);
+					_delay_ms(500);
+					input_pass++;
+				}
+			}
+			Lcd4_Clear();
+			int i;
+			for(i = 0; i<4; i++){
+				if(lock[i] != lock_in[i]){
+					Lcd4_Write_String("Wrong Passcode!");
+					_delay_ms(1000);
+					break;
+				}
+			}
+			
+			if(i == 4){
+				Lcd4_Write_String("Correct Passcode.");
+				
+				 //Rotates Motor Anticlockwise
+				 PORTC = 0x01;
+				 _delay_ms(4000);
+
+				 //Stops Motor
+				 PORTC = 0x00;
+				 _delay_ms(500);
+				 
+				 Lcd4_Set_Cursor(2, 0);
+				 Lcd4_Write_String("Proceed To Vote");
+				 _delay_ms(1000);
+			}
+			
+			Lcd4_Clear();
+			break;
+			
 		}
 		
-		Lcd4_Clear();
-		break;
+		
 		
     }
 }
