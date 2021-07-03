@@ -77,7 +77,8 @@ int main(void)
 	    _delay_ms(500);
 	    Lcd4_Clear();
 	    
-	    Lcd4_Set_Cursor(1, 0);
+		Lcd4_Write_String("Reading Tag...");
+	    Lcd4_Set_Cursor(2, 0);
 	    
 	    int match = 0;
 		
@@ -114,7 +115,7 @@ int main(void)
 				Lcd4_Write_String("ID match found!");
 				_delay_ms(2500);
 				Lcd4_Clear();
-				
+				 srand(time(0));
 				int lock = rand() % (9999 + 1 - 1000) + 1000;
 				unsigned char locks[4];
 				//int div = 99;

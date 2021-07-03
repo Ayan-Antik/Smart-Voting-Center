@@ -82,7 +82,7 @@ int main(void)
 	
 	UART_init();
 	unsigned char lock[4];
-	
+	//Lcd4_Init();
 	unsigned char lock_in[4];
 	int count = 0;
 	int input_pass = 0;
@@ -95,7 +95,7 @@ int main(void)
 		
 		while(count < 4){
 			lock[count] = UART_RxChar();
-			
+			//Lcd4_Write_Char(lock[count]);
 			_delay_ms(200);
 			count++;
 		}
@@ -119,11 +119,11 @@ int main(void)
 			_delay_ms(500);
 			Lcd4_Clear();
 			
-			Lcd4_Write_String("Input your unique passcode now");
+			/*Lcd4_Write_String("Input your unique passcode now");
 			for(int i = 0; i<16; i++){
 				_delay_ms(100);
 				Lcd4_Shift_Left();
-			}
+			}*/
 			Lcd4_Clear();
 			Lcd4_Write_String("Your Passcode: ");
 			Lcd4_Set_Cursor(2, 0);

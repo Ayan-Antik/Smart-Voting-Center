@@ -32,6 +32,8 @@ Discarded input sections
                 0x00000000        0x8 main.o
  .text.Lcd4_Shift_Right
                 0x00000000        0xe main.o
+ .text.Lcd4_Shift_Left
+                0x00000000        0xe main.o
  .text.UART_TxChar
                 0x00000000        0x8 main.o
  .text          0x00000000        0x0 d:/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
@@ -192,7 +194,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x94e
+.text           0x00000000      0x918
  *(.vectors)
  .vectors       0x00000000       0x54 D:/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega32/avr5/crtatmega32.o
                 0x00000000                __vector_default
@@ -296,24 +298,21 @@ END GROUP
  .text.Lcd4_Write_String
                 0x0000060c       0x2c main.o
                 0x0000060c                Lcd4_Write_String
- .text.Lcd4_Shift_Left
-                0x00000638        0xe main.o
-                0x00000638                Lcd4_Shift_Left
  .text.UART_init
-                0x00000646       0x18 main.o
-                0x00000646                UART_init
+                0x00000638       0x18 main.o
+                0x00000638                UART_init
  .text.UART_RxChar
-                0x0000065e        0x8 main.o
-                0x0000065e                UART_RxChar
- .text.get_key  0x00000666       0xd0 main.o
-                0x00000666                get_key
- .text.main     0x00000736      0x214 main.o
-                0x00000736                main
-                0x0000094a                . = ALIGN (0x2)
+                0x00000650        0x8 main.o
+                0x00000650                UART_RxChar
+ .text.get_key  0x00000658       0xd0 main.o
+                0x00000658                get_key
+ .text.main     0x00000728      0x1ec main.o
+                0x00000728                main
+                0x00000914                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000094a        0x0 d:/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
-                0x0000094a                _exit
-                0x0000094a                exit
+ .fini9         0x00000914        0x0 d:/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
+                0x00000914                _exit
+                0x00000914                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -332,11 +331,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000094a        0x4 d:/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
+ .fini0         0x00000914        0x4 d:/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x0000094e                _etext = .
+                0x00000918                _etext = .
 
-.data           0x00800060       0x7a load address 0x0000094e
+.data           0x00800060       0x5a load address 0x00000918
                 0x00800060                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -344,27 +343,26 @@ END GROUP
  *(.rodata)
  *(.rodata*)
  .rodata.str1.1
-                0x00800060       0x79 main.o
+                0x00800060       0x5a main.o
  *(.gnu.linkonce.r*)
-                0x008000da                . = ALIGN (0x2)
- *fill*         0x008000d9        0x1 
-                0x008000da                _edata = .
-                0x008000da                PROVIDE (__data_end, .)
+                0x008000ba                . = ALIGN (0x2)
+                0x008000ba                _edata = .
+                0x008000ba                PROVIDE (__data_end, .)
 
-.bss            0x008000da        0x0
+.bss            0x008000ba        0x0
                 [!provide]                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
  *(COMMON)
                 [!provide]                PROVIDE (__bss_end, .)
-                0x0000094e                __data_load_start = LOADADDR (.data)
-                0x000009c8                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x00000918                __data_load_start = LOADADDR (.data)
+                0x00000972                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x008000da        0x0
+.noinit         0x008000ba        0x0
                 [!provide]                PROVIDE (__noinit_start, .)
  *(.noinit*)
                 [!provide]                PROVIDE (__noinit_end, .)
-                0x008000da                _end = .
+                0x008000ba                _end = .
                 [!provide]                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
@@ -437,20 +435,20 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x1a53
+.debug_info     0x00000000     0x19da
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x4e6 D:/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega32/avr5/crtatmega32.o
- .debug_info    0x000004e6     0x156d main.o
+ .debug_info    0x000004e6     0x14f4 main.o
 
 .debug_abbrev   0x00000000      0x717
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x4a3 D:/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega32/avr5/crtatmega32.o
  .debug_abbrev  0x000004a3      0x274 main.o
 
-.debug_line     0x00000000      0xd12
+.debug_line     0x00000000      0xce3
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x116 D:/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega32/avr5/crtatmega32.o
- .debug_line    0x00000116      0xbfc main.o
+ .debug_line    0x00000116      0xbcd main.o
 
 .debug_frame    0x00000000      0x208
  *(.debug_frame)
@@ -462,9 +460,9 @@ END GROUP
  .debug_str     0x00000196      0x30b main.o
                                 0x344 (size before relaxing)
 
-.debug_loc      0x00000000     0x15ce
+.debug_loc      0x00000000     0x1562
  *(.debug_loc)
- .debug_loc     0x00000000     0x15ce main.o
+ .debug_loc     0x00000000     0x1562 main.o
 
 .debug_macinfo
  *(.debug_macinfo)
