@@ -14,9 +14,11 @@
 #define EN eS_PORTC7
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "lcd.h"
 
 void UART_init()
@@ -72,18 +74,35 @@ char get_key(){
 	return 0;
 }
 
+int count_a = 0;
+int count_b = 0;
+int count_c = 0;
+int count_d = 0;
+char* buff;
 
+volatile int end = 0;
+ISR(INT1_vect){
+	
+	end = 1; 
+
+}
 
 int main(void)
 {	
-	DDRD = 0b11111110;
+	DDRD = 0b11110110;
 	DDRB = 0b00000111;
 	DDRC = 0xFF;
+
+	//INTERRUPT
+	GICR = (1<<INT1); //STEP3
+	MCUCR = MCUCR & 0b11110011;//STEP4
+	sei();
 	
 	UART_init();
 	unsigned char lock[4];
 	//Lcd4_Init();
 	unsigned char lock_in[4];
+	unsigned char admin_lock[4] = {'8','8','8','8'};
 	int count = 0;
 	int input_pass = 0;
 	
@@ -92,6 +111,7 @@ int main(void)
     while (1) 
     {
 		
+		if(!end){
 		
 		while(count < 4){
 			lock[count] = UART_RxChar();
@@ -153,7 +173,7 @@ int main(void)
 				
 				 //Rotates Motor Anticlockwise
 				 PORTC = 0x01;
-				 _delay_ms(4000);
+				 _delay_ms(3000);
 
 				 //Stops Motor
 				 PORTC = 0x00;
@@ -163,6 +183,49 @@ int main(void)
 				 Lcd4_Write_String("Proceed To Vote");
 				
 				 _delay_ms(1000);
+				 Lcd4_Clear();
+				  Lcd4_Write_String("Vote Now");
+				 while(1){
+					 
+					 if(!(PINA & (1<<PINA0))){
+						 count_a++;
+						 break;
+					}
+					
+					else if(!(PINA & (1<<PINA1))){
+						count_b++;
+						break;
+					}
+					else if(!(PINA & (1<<PINA2))){
+						count_c++;
+						break;
+					}
+					else if(!(PINA & (1<<PINA3))){
+						count_d++;
+						break;
+					}
+					
+					
+					
+				 }
+				 
+				 Lcd4_Clear();
+				 Lcd4_Write_String("Thank You For Voting");
+				 
+				 for(int i = 0; i<4; i++){
+					 _delay_ms(100);
+					 Lcd4_Shift_Left();
+				 }
+				 
+				 //Rotates Motor Clockwise
+				  PORTC = 0x02;
+				  _delay_ms(3000);
+
+				  //Stops Motor
+				  PORTC = 0x03;
+				  _delay_ms(500);
+
+				 
 			}
 			
 			Lcd4_Clear();
@@ -172,7 +235,77 @@ int main(void)
 		}
 		
 		
-		
-    }
-}
+		}
 
+		else if(end){
+			Lcd4_Clear();
+			Lcd4_Write_String("Voting Ended");
+			_delay_ms(1000);
+			
+			Lcd4_Clear();
+			Lcd4_Write_String("Admin Passcode: ");
+			Lcd4_Set_Cursor(2, 0);
+			_delay_ms(200);
+			while(input_pass < 4){
+				if(get_key() != 0){
+					lock_in[input_pass] = get_key();
+					Lcd4_Write_Char(lock_in[input_pass]);
+					_delay_ms(500);
+					input_pass++;
+				}
+			}
+			Lcd4_Clear();
+			int i;
+			for(i = 0; i<4; i++){
+				if(admin_lock[i] != lock_in[i]){
+					Lcd4_Write_String("Wrong Passcode!");
+					_delay_ms(1000);
+					
+					break;
+				}
+			}
+			
+			if(i == 4){
+				Lcd4_Write_String("Correct Passcode.");
+				
+				//Rotates Motor Anticlockwise
+				PORTC = 0x01;
+				_delay_ms(3000);
+
+				//Stops Motor
+				PORTC = 0x00;
+				_delay_ms(500);		
+				Lcd4_Clear();	
+				Lcd4_Write_String("Show Votes?");
+			while(1){
+
+				if(!(PINA & (1<<PINA4))){
+					Lcd4_Clear();
+					Lcd4_Write_String("A: ");
+					itoa(count_a, buff, 10);
+					Lcd4_Write_String(buff);
+					Lcd4_Set_Cursor(1,8);
+					Lcd4_Write_String("B: ");
+					itoa(count_b, buff, 10);
+					Lcd4_Write_String(buff);
+					Lcd4_Set_Cursor(2, 0);
+					Lcd4_Write_String("C: ");
+					itoa(count_c, buff, 10);
+					Lcd4_Write_String(buff);
+					Lcd4_Set_Cursor(2,8);
+					Lcd4_Write_String("D: ");
+					itoa(count_d, buff, 10);
+					Lcd4_Write_String(buff);
+					_delay_ms(2000);
+							
+					break;
+				}
+
+			}
+
+		}
+
+
+		}
+	}
+}

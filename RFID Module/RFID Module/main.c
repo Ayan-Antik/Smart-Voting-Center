@@ -18,17 +18,20 @@
 #include <stdio.h>
 #include "lcd.h"
 
-int total_id = 5;
+int total_id = 7;
 int id_len = 10;
-unsigned char valid_id[5][10] = {
+unsigned char valid_id[7][10] = {
+	"1501020303",
 	"1501020304",
 	"1501020305",
 	"1501020306",
 	"1501020307",
 	"1501020308",
+	"1501020309",
 };
 
-
+uint16_t voted[7] = {0,0,0,0,0,0,0};
+uint16_t voteflag = 0;
 
 void UART_init()
 {	
@@ -98,8 +101,16 @@ int main(void)
 						}
 					}
 					if(j == id_len){
-						match = 1;
-						break;
+						if(!voted[i]){
+							voted[i] = 1;
+							match = 1;
+							break;	
+						}
+						else if(voted[i]){
+							match = 1;
+							voteflag = 1;
+							break;
+						}
 					}
 				}
 			}
@@ -112,10 +123,20 @@ int main(void)
 			}
 			else if(match == 1){
 				Lcd4_Clear();
+				if(voteflag){
+					Lcd4_Write_String("This Person Has");
+					_delay_ms(1000);
+					Lcd4_Set_Cursor(2, 0);
+					Lcd4_Write_String("Already Voted");
+					_delay_ms(2500);
+					Lcd4_Clear();
+					voteflag = 0;
+					break;
+				}
 				Lcd4_Write_String("ID match found!");
 				_delay_ms(2500);
 				Lcd4_Clear();
-				 srand(time(0));
+				//srand(time(0));
 				int lock = rand() % (9999 + 1 - 1000) + 1000;
 				unsigned char locks[4];
 				//int div = 99;
