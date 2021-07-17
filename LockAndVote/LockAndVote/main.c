@@ -127,15 +127,15 @@ int main(void)
 			_delay_ms(1000);
 			Lcd4_Clear();
 			
-			Lcd4_Write_String("Lock: ");
-			Lcd4_Set_Cursor(2,0);
+			/*Lcd4_Write_String("Lock: ");
+			Lcd4_Set_Cursor(2,0);*/
 			
 			count = 0;
-			while(count < 4){
+			/*while(count < 4){
 				Lcd4_Write_Char(lock[count]);
 				_delay_ms(100);
 				count++;
-			}
+			}*/
 			_delay_ms(500);
 			Lcd4_Clear();
 			
@@ -172,11 +172,12 @@ int main(void)
 				Lcd4_Write_String("Correct Passcode.");
 				
 				 //Rotates Motor Anticlockwise
-				 PORTC = 0x01;
+				 PORTC |= 0b00000001;
+				 PORTC &= 0b11111101;
 				 _delay_ms(3000);
 
 				 //Stops Motor
-				 PORTC = 0x00;
+				 PORTC &= 0b11111100;
 				 _delay_ms(500);
 				 
 				 Lcd4_Set_Cursor(2, 0);
@@ -218,11 +219,12 @@ int main(void)
 				 }
 				 
 				 //Rotates Motor Clockwise
-				  PORTC = 0x02;
+				  PORTC |= 0b00000010;
+				  PORTC &= 0b11111110;
 				  _delay_ms(3000);
 
 				  //Stops Motor
-				  PORTC = 0x03;
+				  PORTC &= 0b11111100;
 				  _delay_ms(500);
 
 				 
@@ -267,14 +269,15 @@ int main(void)
 			
 			if(i == 4){
 				Lcd4_Write_String("Correct Passcode.");
-				
-				//Rotates Motor Anticlockwise
-				PORTC = 0x01;
-				_delay_ms(3000);
+				 //Rotates Motor Anticlockwise
+				 PORTC |= 0b00000001;
+				 PORTC &= 0b11111101;
+				 _delay_ms(3000);
 
-				//Stops Motor
-				PORTC = 0x00;
-				_delay_ms(500);		
+				 //Stops Motor
+				 PORTC &= 0b11111100;
+				 _delay_ms(500);
+					
 				Lcd4_Clear();	
 				Lcd4_Write_String("Show Votes?");
 			while(1){
@@ -302,10 +305,21 @@ int main(void)
 				}
 
 			}
+			
+			//Rotates Motor Clockwise
+			PORTC |= 0b00000010;
+			PORTC &= 0b11111110;
+			_delay_ms(3000);
 
-		}
+			//Stops Motor
+			PORTC &= 0b11111100;
+			_delay_ms(500);
+			
+			Lcd4_Clear();
 
+		}	
 
+			break;
 		}
 	}
 }
