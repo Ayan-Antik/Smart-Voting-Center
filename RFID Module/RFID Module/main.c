@@ -91,6 +91,7 @@ int main(void)
   
     while (1) 
     {	
+		Lcd4_Clear();	
 		Lcd4_Write_String("Checking temperature..");
 		for(int i = 0; i < 8; i++){
 			Lcd4_Shift_Left();
