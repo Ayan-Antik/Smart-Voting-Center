@@ -5,12 +5,12 @@
  * Author : USER
  */ 
 #define F_CPU 1000000
-#define D4 eS_PORTA4
-#define D5 eS_PORTA5
-#define D6 eS_PORTA6
-#define D7 eS_PORTA7
-#define RS eS_PORTA0
-#define EN eS_PORTA1
+#define D4 eS_PORTB4
+#define D5 eS_PORTB5
+#define D6 eS_PORTB6
+#define D7 eS_PORTB7
+#define RS eS_PORTB0
+#define EN eS_PORTB1
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -49,6 +49,23 @@ void UART_init()
 	UBRRH = 0x00;
 }
 
+void ADC_init()
+{
+	ADMUX = 0b11000000;
+	ADCSRA = 0b10000111;
+}
+
+float ADC_Read()
+{
+	float value;
+	float volt;
+	ADCSRA |= (1 << ADSC);
+	while( ADCSRA & (1 << ADSC));
+	value = ADCL  | ( 0b00000011 & ADCH) << 8;
+	volt = value*2.56/1024; //V
+	volt = volt*100; //temp
+	return volt;
+}
 unsigned char UART_RxChar()
 {
 	while ((UCSRA & (1 << RXC)) == 0x00);// Wait till data is received
@@ -61,15 +78,45 @@ void UART_TxChar(unsigned char data){
 	
 }
 int main(void)
-{	
+{
+   float temp_F;
+   char Fahrenheit[5];	
    DDRD = 0b11111110;
-   DDRA = 0xFF;
+   DDRB = 0xFF;
+   DDRA = 0x00;
    
    Lcd4_Init();
    UART_init();
+   ADC_init();
   
     while (1) 
     {	
+		Lcd4_Write_String("Checking temperature..");
+		for(int i = 0; i < 8; i++){
+			Lcd4_Shift_Left();
+			_delay_ms(200);
+		}
+		_delay_ms(1000);
+		Lcd4_Clear();
+		Lcd4_Write_String("Temperature:");
+		_delay_ms(1000);
+		Lcd4_Set_Cursor(2,0);
+		temp_F = ADC_Read();
+		dtostrf(temp_F,4,2,Fahrenheit);
+		Lcd4_Write_String(Fahrenheit);
+		_delay_ms(2000);
+		if( temp_F >= 99.50){
+			Lcd4_Clear();
+			Lcd4_Write_String("Temperature not normal");
+			for(int i = 0; i < 8; i++){
+				Lcd4_Shift_Left();
+				_delay_ms(200);
+			}
+			Lcd4_Clear();
+			_delay_ms(4000);
+			continue;
+			
+		}
 		unsigned char id[10];
 	    int count = 1;
 	    Lcd4_Clear();
