@@ -105,12 +105,12 @@ int main(void)
 	unsigned char admin_lock[4] = {'8','8','8','8'};
 	int count = 0;
 	int input_pass = 0;
-	
-	
+	Lcd4_Init();
+	PORTD |= 0b00000100;
     /* Replace with your application code */
     while (1) 
     {
-		
+		Lcd4_Clear();
 		if(!end){
 		
 		while(count < 4){
@@ -122,7 +122,7 @@ int main(void)
 		
 		if(PINB & (1<<PINB7)){ // IF MOTION IS DETECTED
 			_delay_ms(100);
-			Lcd4_Init();
+			
 			Lcd4_Write_String("Motion Detected!");
 			_delay_ms(1000);
 			Lcd4_Clear();
@@ -148,24 +148,48 @@ int main(void)
 			Lcd4_Write_String("Your Passcode: ");
 			Lcd4_Set_Cursor(2, 0);
 			_delay_ms(200);
-			
-			while(input_pass < 4){
-				if(get_key() != 0){
-					lock_in[input_pass] = get_key();
-					Lcd4_Write_Char(lock_in[input_pass]);
-					_delay_ms(500);
-					input_pass++;
-				}
-			}
-			Lcd4_Clear();
 			int i;
-			for(i = 0; i<4; i++){
-				if(lock[i] != lock_in[i]){
-					Lcd4_Write_String("Wrong Passcode!");
-					_delay_ms(1000);
-					
-					break;
+			int try = 0;
+			while(try < 2){
+				
+			
+				while(input_pass < 4){
+					if(get_key() != 0){
+						lock_in[input_pass] = get_key();
+						Lcd4_Write_Char(lock_in[input_pass]);
+						_delay_ms(500);
+						input_pass++;
+					}
 				}
+				Lcd4_Clear();
+				
+				for(i = 0; i<4; i++){
+					if(lock[i] != lock_in[i]){
+						try++;
+						Lcd4_Write_String("Wrong Passcode!");
+						_delay_ms(1000);
+						
+						Lcd4_Clear();
+						if(try == 2){
+							PORTD &= 0b11111011;
+							_delay_ms(100);
+							PORTD |= 0b00000100;
+							break;
+						}
+						
+						Lcd4_Write_String("Try Again!");
+						_delay_ms(1000);
+						
+						Lcd4_Clear();
+						Lcd4_Write_String("Your Passcode: ");
+						Lcd4_Set_Cursor(2, 0);
+						_delay_ms(200);
+						input_pass = 0;
+						break;
+					}
+					
+				}
+				if(i == 4)break;
 			}
 			
 			if(i == 4){
@@ -185,31 +209,44 @@ int main(void)
 				
 				 _delay_ms(1000);
 				 Lcd4_Clear();
-				  Lcd4_Write_String("Vote Now");
+				 Lcd4_Write_String("Vote Now");
 				 while(1){
 					 
 					 if(!(PINA & (1<<PINA0))){
 						 count_a++;
+						 Lcd4_Clear();
+						 Lcd4_Write_String("You voted for Option A");
+						  
 						 break;
 					}
 					
 					else if(!(PINA & (1<<PINA1))){
 						count_b++;
+						 Lcd4_Clear();
+						 Lcd4_Write_String("You voted for Option B");
 						break;
 					}
 					else if(!(PINA & (1<<PINA2))){
 						count_c++;
+						 Lcd4_Clear();
+						 Lcd4_Write_String("You voted for Option C");
 						break;
 					}
 					else if(!(PINA & (1<<PINA3))){
 						count_d++;
+						 Lcd4_Clear();
+						 Lcd4_Write_String("You voted for Option D");
 						break;
 					}
 					
 					
 					
 				 }
-				 
+				 for(uint16_t i= 0; i<10; i++){
+					 Lcd4_Shift_Left();
+					 _delay_ms(100);
+				 }
+				 _delay_ms(200);
 				 Lcd4_Clear();
 				 Lcd4_Write_String("Thank You For Voting");
 				 

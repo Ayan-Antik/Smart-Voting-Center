@@ -13,6 +13,7 @@
 #define EN eS_PORTB1
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -77,13 +78,26 @@ void UART_TxChar(unsigned char data){
 	UDR = data;
 	
 }
+
+volatile int wait = 0;
+ISR(INT1_vect){
+	
+	wait = 0;
+
+}
+
 int main(void)
 {
    float temp_F;
    char Fahrenheit[5];	
-   DDRD = 0b11111110;
+   DDRD = 0b11110110;
    DDRB = 0xFF;
    DDRA = 0x00;
+   
+   //INTERRUPT
+   GICR = (1<<INT1); 
+   MCUCR = MCUCR & 0b11110011;
+   sei();
    
    Lcd4_Init();
    UART_init();
@@ -91,7 +105,11 @@ int main(void)
   
     while (1) 
     {	
-		Lcd4_Clear();	
+		if(wait)
+			continue;
+		
+		_delay_ms(1500);
+		Lcd4_Clear();
 		Lcd4_Write_String("Checking temperature..");
 		for(int i = 0; i < 8; i++){
 			Lcd4_Shift_Left();
@@ -109,6 +127,14 @@ int main(void)
 		if( temp_F >= 99.50){
 			Lcd4_Clear();
 			Lcd4_Write_String("Temperature not normal");
+			
+			for(int i = 0; i < 8; i++){
+				Lcd4_Shift_Left();
+				_delay_ms(200);
+			}
+			_delay_ms(1000);
+			Lcd4_Clear();
+			Lcd4_Write_String("You can't vote now");
 			for(int i = 0; i < 8; i++){
 				Lcd4_Shift_Left();
 				_delay_ms(200);
@@ -167,6 +193,7 @@ int main(void)
 				Lcd4_Write_String("ID match: ");
 				Lcd4_Set_Cursor(2,0);
 				Lcd4_Write_String("Not found. Reset");
+				_delay_ms(500);
 				break;
 			}
 			else if(match == 1){
@@ -184,10 +211,10 @@ int main(void)
 				Lcd4_Write_String("ID match found!");
 				_delay_ms(2500);
 				Lcd4_Clear();
-				//srand(time(0));
+				//Generating Random Lock Code
 				int lock = rand() % (9999 + 1 - 1000) + 1000;
 				unsigned char locks[4];
-				//int div = 99;
+				
 				int mod = 0;
 				while(lock != 0){
 					locks[mod] = (lock % 10) + '0';
@@ -203,9 +230,10 @@ int main(void)
 					UART_TxChar(locks[i]);
 				}
 				
-				_delay_ms(5000);
+				_delay_ms(1000);
 				Lcd4_Clear();
-				_delay_ms(3000);
+				Lcd4_Write_String("Please Wait...");
+				wait = 1;
 				break;
 				//Lcd4_Write_Char(lock);
 				
