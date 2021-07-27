@@ -86,17 +86,24 @@ ISR(INT1_vect){
 
 }
 
+volatile int end = 0;
+ISR(INT0_vect){
+	end = 1;
+}
 int main(void)
 {
    float temp_F;
    char Fahrenheit[5];	
-   DDRD = 0b11110110;
+   DDRD = 0b11110010;
    DDRB = 0xFF;
    DDRA = 0x00;
    
    //INTERRUPT
    GICR = (1<<INT1); 
    MCUCR = MCUCR & 0b11110011;
+   
+   GICR = (1<<INT0);
+   MCUCR = MCUCR & 0b11111100;
    sei();
    
    Lcd4_Init();
@@ -105,8 +112,18 @@ int main(void)
   
     while (1) 
     {	
-		if(wait)
-			continue;
+		if(wait){
+			if(end == 0)
+				continue;
+			else{
+				_delay_ms(200);
+				Lcd4_Clear();
+				Lcd4_Write_String("Voting Ended");
+				_delay_ms(800);
+				Lcd4_Clear();
+				break;
+			}
+		}
 		
 		_delay_ms(1500);
 		Lcd4_Clear();
