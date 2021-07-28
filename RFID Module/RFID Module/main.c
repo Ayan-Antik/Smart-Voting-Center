@@ -120,6 +120,7 @@ int main(void)
 		Lcd4_Clear();
 		
 		Lcd4_Write_String("Checking temperature..");
+		_delay_ms(400);
 		for(int i = 0; i < 8; i++){
 			Lcd4_Shift_Left();
 			_delay_ms(200);
@@ -206,6 +207,7 @@ int main(void)
 				break;
 			}
 			else if(match == 1){
+				_delay_ms(300);
 				Lcd4_Clear();
 				if(voteflag){
 					Lcd4_Write_String("This Person Has");
@@ -217,8 +219,9 @@ int main(void)
 					voteflag = 0;
 					break;
 				}
+				
 				Lcd4_Write_String("ID match found!");
-				_delay_ms(2500);
+				_delay_ms(2000);
 				Lcd4_Clear();
 				//Generating Random Lock Code
 				int lock = rand() % (9999 + 1 - 1000) + 1000;

@@ -207,7 +207,7 @@ int main(void)
 				 Lcd4_Set_Cursor(2, 0);
 				 Lcd4_Write_String("Proceed To Vote");
 				
-				 _delay_ms(1000);
+				 _delay_ms(800);
 				 Lcd4_Clear();
 				 Lcd4_Write_String("Vote Now");
 				 while(1){
@@ -242,6 +242,8 @@ int main(void)
 					
 					
 				 }
+				 
+				 _delay_ms(400);
 				 for(uint16_t i= 0; i<10; i++){
 					 Lcd4_Shift_Left();
 					 _delay_ms(100);
@@ -249,6 +251,7 @@ int main(void)
 				 _delay_ms(200);
 				 Lcd4_Clear();
 				 Lcd4_Write_String("Thank You For Voting");
+				 _delay_ms(400);
 				 
 				 for(int i = 0; i<4; i++){
 					 _delay_ms(100);
